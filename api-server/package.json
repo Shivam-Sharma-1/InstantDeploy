@@ -12,6 +12,8 @@
   "dependencies": {
     "@aws-sdk/client-ecs": "^3.620.0",
     "express": "^4.19.2",
-    "random-word-slugs": "^0.1.7"
+    "ioredis": "^5.4.1",
+    "random-word-slugs": "^0.1.7",
+    "socket.io": "^4.7.5"
   }
 }
