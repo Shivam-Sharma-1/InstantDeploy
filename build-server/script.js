@@ -1,7 +1,6 @@
 const { exec } = require("child_process");
-const path = require("path");
 const fs = require("fs");
-const { S3, PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
+const { PutObjectCommand, S3Client } = require("@aws-sdk/client-s3");
 const mime = require("mime-types");
 const Redis = require("ioredis");
 
@@ -17,8 +16,8 @@ const s3Client = new S3Client({
 
 const PROJECT_ID = process.env.PROJECT_ID;
 
-function publishLog({ log }) {
-  publisher.publish(`log:${PROJECT_ID}`, JSON.stringify({ log }));
+function publishLog(log) {
+  publisher.publish(`logs:${PROJECT_ID}`, JSON.stringify({ log }));
 }
 
 async function init() {
@@ -40,6 +39,7 @@ async function init() {
 
   p.on("close", async () => {
     console.log("Build completed");
+    publishLog("Build completed");
     const distFolderPath = `${outDirPath}/dist`;
     const distFolderContents = fs.readdirSync(distFolderPath, {
       recursive: true,
@@ -53,7 +53,7 @@ async function init() {
       if (fs.lstatSync(filePath).isDirectory()) continue;
 
       console.log("Uploading: ", filePath);
-      publishLog("Uploading: ", file);
+      publishLog("Uploading: ", filePath);
 
       const command = new PutObjectCommand({
         Bucket: "instantdeploy",
@@ -65,7 +65,7 @@ async function init() {
       await s3Client.send(command);
 
       console.log("Uploaded: ", filePath);
-      publishLog("Uploaded: ", file);
+      publishLog("Uploaded: ", filePath);
     }
     console.log("Done uploading files");
     publishLog("Done uploading files");
